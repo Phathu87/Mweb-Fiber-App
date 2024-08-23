@@ -1,0 +1,46 @@
+.App {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  background-color: #f4f4f4;
+}
+
+.provider-filter, .price-range-selector, .product-list {
+  margin-bottom: 20px;
+}
+
+.provider-item {
+  display: inline-block;
+  margin: 10px;
+  text-align: center;
+}
+
+.provider-icon {
+  width: 80px;
+  height: 40px;
+}
+
+.product-card {
+  border: 1px solid #ddd;
+  padding: 15px;
+  margin: 10px;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.product-list {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.product-card h3 {
+  margin: 0 0 10px;
+}
+
+.product-card p {
+  margin: 5px 0;
+}
+
+input[type="checkbox"] {
+  margin-right: 8px;
+}

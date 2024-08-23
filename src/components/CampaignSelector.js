@@ -6,10 +6,18 @@ const CampaignSelector = ({ onSelect }) => {
     const [selectedCampaign, setSelectedCampaign] = useState('');
 
     useEffect(() => {
-        fetchCampaigns().then(response => {
-            setCampaigns(response.data.campaigns);
-            setSelectedCampaign(response.data.campaigns[0]?.code || '');
-        });
+        const loadCampaigns = async () => {
+            try {
+                const response = await fetchCampaigns();
+                // Assuming response.data.campaigns is the correct path to the campaigns data
+                setCampaigns(response.data.campaigns);
+                setSelectedCampaign(response.data.campaigns[0]?.code || '');
+            } catch (error) {
+                console.error('Error fetching campaigns:', error);
+            }
+        };
+
+        loadCampaigns();
     }, []);
 
     const handleChange = (event) => {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchProducts } from './services/api';
+import { fetchProducts, fetchCampaigns } from './services/api';
 import CampaignSelector from './components/CampaignSelector';
 import ProviderFilter from './components/ProviderFilter';
 import PriceRangeSelector from './components/PriceRangeSelector';
@@ -18,9 +18,33 @@ const App = () => {
     const [selectedProviders, setSelectedProviders] = useState([]);
     const [selectedPriceRanges, setSelectedPriceRanges] = useState([]);
 
+    useEffect(() => {
+        const fetchProductsData = async () => {
+            if (campaign) {
+                try {
+                    const response = await fetchProducts(campaign); // Assuming fetchProducts takes a single campaign
+                    if (response && response.data && response.data.products) {
+                        const summarizedProducts = response.data.products.map(p => ({
+                            productCode: p.productCode,
+                            productName: p.productName,
+                            productRate: p.productRate,
+                            provider: p.subcategory.replace('Uncapped', '').replace('Capped', '').trim()
+                        }));
+                        setProducts(summarizedProducts);
+                    } else {
+                        console.error('Unexpected response structure:', response);
+                    }
+                } catch (error) {
+                    console.error('Error fetching products:', error);
+                }
+            }
+        };
+
+        fetchProductsData();
+    }, [campaign]);
+
     const handleCampaignChange = (selectedCampaign) => {
         setCampaign(selectedCampaign);
-        fetchProductsForCampaign(selectedCampaign);
     };
 
     const handleProviderChange = (provider, isChecked) => {
@@ -35,23 +59,11 @@ const App = () => {
         );
     };
 
-    const fetchProductsForCampaign = (campaignCode) => {
-        fetchProducts([campaignCode]).then(response => {
-            const summarizedProducts = response.data.products.map(p => ({
-                productCode: p.productCode,
-                productName: p.productName,
-                productRate: p.productRate,
-                provider: p.subcategory.replace('Uncapped', '').replace('Capped', '').trim()
-            }));
-            setProducts(summarizedProducts);
-        });
-    };
-
     const filteredProducts = products.filter(product => {
         const inProviderSet = selectedProviders.length === 0 || selectedProviders.includes(product.provider);
-        const inPriceRange = selectedPriceRanges.length === 0 || selectedPriceRanges.some(range => {
-            const { min, max } = priceRanges.find(r => r.label === range);
-            return product.productRate >= min && product.productRate <= max;
+        const inPriceRange = selectedPriceRanges.length === 0 || selectedPriceRanges.some(rangeLabel => {
+            const range = priceRanges.find(r => r.label === rangeLabel);
+            return range ? (product.productRate >= range.min && product.productRate <= range.max) : false;
         });
         return inProviderSet && inPriceRange;
     });
@@ -60,7 +72,6 @@ const App = () => {
         <div className="App">
             <CampaignSelector onSelect={handleCampaignChange} />
             <ProviderFilter
-                providers={Array.from(new Set(products.map(p => p.provider)))}
                 selectedProviders={selectedProviders}
                 onProviderChange={handleProviderChange}
             />
